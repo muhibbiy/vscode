@@ -436,7 +436,7 @@ export class UserSettings extends Disposable {
 		super();
 		this.parser = new ConfigurationModelParser(this.userSettingsResource.toString());
 		this.parseOptions = { scopes: this.scopes };
-		this._register(this.fileService.watch(extUri.dirname(this.userSettingsResource)));
+		this._register(this.fileService.watch(extUri.dirname(this.userSettingsResource), { includes: [{ base: this.userSettingsResource.fsPath, pattern: '*' }], excludes: [], recursive: false }));
 		// Also listen to the resource incase the resource is a symlink - https://github.com/microsoft/vscode/issues/118134
 		this._register(this.fileService.watch(this.userSettingsResource));
 		this._register(Event.any(

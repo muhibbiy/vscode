@@ -11,7 +11,7 @@ import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cance
 import { toErrorMessage } from 'vs/base/common/errorMessage';
 import { Emitter } from 'vs/base/common/event';
 import { isEqualOrParent, randomPath } from 'vs/base/common/extpath';
-import { parse, ParsedPattern } from 'vs/base/common/glob';
+import { parse, ParsedPattern, patternsEquals } from 'vs/base/common/glob';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { TernarySearchTree } from 'vs/base/common/map';
 import { normalizeNFC } from 'vs/base/common/normalization';
@@ -22,7 +22,6 @@ import { realcaseSync, realpathSync } from 'vs/base/node/extpath';
 import { NodeJSFileWatcherLibrary } from 'vs/platform/files/node/watcher/nodejs/nodejsWatcherLib';
 import { FileChangeType } from 'vs/platform/files/common/files';
 import { IDiskFileChange, ILogMessage, coalesceEvents, IRecursiveWatchRequest, IRecursiveWatcher } from 'vs/platform/files/common/watcher';
-import { equals } from 'vs/base/common/arrays';
 
 export interface IParcelWatcherInstance {
 
@@ -129,15 +128,15 @@ export class ParcelWatcher extends Disposable implements IRecursiveWatcher {
 			}
 
 			// Re-watch path if excludes/includes have changed or polling interval
-			return !equals(watcher.request.excludes, request.excludes) || !equals(watcher.request.includes, request.includes) || watcher.request.pollingInterval !== request.pollingInterval;
+			return !patternsEquals(watcher.request.excludes, request.excludes) || !patternsEquals(watcher.request.includes, request.includes) || watcher.request.pollingInterval !== request.pollingInterval;
 		});
 
 		// Gather paths that we should stop watching
 		const pathsToStopWatching = Array.from(this.watchers.values()).filter(({ request }) => {
 			return !normalizedRequests.find(normalizedRequest => {
 				return normalizedRequest.path === request.path &&
-					equals(normalizedRequest.excludes, request.excludes) &&
-					equals(normalizedRequest.includes, request.includes) &&
+					patternsEquals(normalizedRequest.excludes, request.excludes) &&
+					patternsEquals(normalizedRequest.includes, request.includes) &&
 					normalizedRequest.pollingInterval === request.pollingInterval;
 
 			});
